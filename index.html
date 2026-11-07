@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f8f7">
+  <title>Parcel Sense · 택배 충격 기록</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#202c29;background:#f6f8f7;font-synthesis:none;--muted:#75817c;--line:#e4e9e6;--green:#30705a}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% 15%,#eaf2ed88,transparent 55%);min-height:100vh}main{max-width:1120px;margin:auto;padding:30px 28px 44px}
+    header{display:flex;justify-content:flex-end;align-items:center;gap:16px;padding-bottom:24px;border-bottom:1px solid var(--line)}
+    .tag{font-size:11px;letter-spacing:1px;color:var(--muted);text-align:right}
+    .intro{margin:42px 0 28px}.eyebrow{font-size:10px;letter-spacing:2.3px;color:var(--green);font-weight:750}h1{font-size:clamp(27px,4.2vw,40px);line-height:1.35;letter-spacing:-1.7px;margin:12px 0}p{line-height:1.8;color:var(--muted)}.intro p{font-size:14px;margin:0}
+    .layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(290px,1fr);gap:20px;align-items:stretch}.viewer{background:radial-gradient(ellipse at 50% 42%,#fff 0%,#edf2ee 75%);border:1px solid var(--line);border-radius:24px;overflow:hidden;position:relative;min-width:0}
+    #scene{height:440px;width:100%;touch-action:none;cursor:grab}#scene:active{cursor:grabbing}canvas{display:block;width:100%;height:100%}.viewer-title{position:absolute;top:23px;left:24px;font-size:10px;font-weight:650;letter-spacing:1.7px;color:#7b8880;pointer-events:none}.hint{text-align:center;font-size:11px;margin:0;padding:0 16px 22px;color:#7b8880}
+    #loading{position:absolute;inset:70px 22px auto;text-align:center;font-size:13px;color:#637363;pointer-events:none}#asset-status{font-size:12px;color:#9a592f;text-align:center;margin:0;padding:0 20px 16px}#asset-status:empty{display:none}.card{border:1px solid var(--line);border-radius:24px;background:#ffffffed;padding:30px;display:flex;flex-direction:column;gap:23px;box-shadow:0 8px 32px #263f2e04;min-width:0}
+    .badge{align-self:flex-start;padding:7px 11px;border-radius:7px;background:#edf5ef;color:#39724e;font-size:11px;font-weight:700}.badge.alert{background:#fff0ee;color:#c24c3f}.badge.unknown{background:#fff5df;color:#805d19}h2{font-size:23px;line-height:1.5;margin:0;letter-spacing:-.9px;word-break:keep-all}dl{margin:0}dl div{padding:18px 0;border-bottom:1px solid #edf0ee;display:flex;justify-content:space-between;align-items:baseline;gap:12px}dl div:first-child{padding-top:0}dt{font-size:12px;color:var(--muted)}dd{font-size:14px;font-weight:650;margin:0;text-align:right;overflow-wrap:anywhere;max-width:65%}#time{font-variant-numeric:tabular-nums}.note{font-size:12px;margin:0;word-break:keep-all}button,.samples a{font:inherit;transition:background .15s,border-color .15s}button{border:1px solid #dce6df;background:#f4f8f5;color:#3d6750;padding:13px 16px;border-radius:12px;cursor:pointer;font-size:12px;font-weight:650;margin-top:auto}button:hover{background:#e8f0e9}button:disabled{cursor:not-allowed;opacity:.5}button:focus-visible,a:focus-visible{outline:3px solid #648568;outline-offset:3px}.samples{margin-top:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}.samples span{font-size:11px;color:var(--muted);margin-right:6px}.samples a{border:1px solid var(--line);background:#fff9;color:#617169;padding:9px 13px;border-radius:9px;text-decoration:none;font-size:11px}.samples a:hover{background:#eaf0ec;border-color:#cbd9cf}noscript{display:block;padding:20px;color:#b5362b}
+    @media(max-width:700px){main{padding:22px 16px 28px}header{padding-bottom:20px}.tag{font-size:9px;letter-spacing:.3px}.intro{margin:30px 0 22px}h1{letter-spacing:-1.1px}.layout{grid-template-columns:1fr;gap:14px}#scene{height:340px}.card{gap:20px;padding:24px}.viewer,.card{border-radius:20px}.samples{gap:7px}.samples span{width:100%;margin:0 0 3px}.hint{padding-bottom:18px}}
+    @media(prefers-reduced-motion:reduce){button,.samples a{transition:none}}
+  </style>
+  <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+</head>
+<body>
+<main>
+  <header><div class="tag">CAPSTONE / 배송 충격 모니터</div></header>
+  <section class="intro"><div class="eyebrow">HANDLE WITH INSIGHT</div><h1>택배에 가해진 충격을 확인하세요.</h1><p>충격이 감지된 면을 3D 상자에서 살펴볼 수 있습니다.</p></section>
+  <div class="layout">
+    <section class="viewer" aria-label="회전 가능한 3D 택배 상자">
+      <div class="viewer-title">PACKAGE / 3D VIEW</div><div id="scene" role="img" aria-label="3D 상자를 불러오는 중"></div>
+      <div id="loading" role="status">3D 상자를 불러오는 중…</div>
+      <p class="hint">드래그하여 회전 · 두 손가락 또는 휠로 확대</p>
+      <p id="asset-status" role="status"></p>
+    </section>
+    <section class="card" aria-labelledby="result-title" aria-live="polite">
+      <div id="badge" class="badge">기록 확인 중</div><h2 id="result-title">배송 충격 기록</h2>
+      <dl><div><dt>감지된 면</dt><dd id="face">—</dd></div><div><dt>발생 시간</dt><dd id="time">—</dd></div><div><dt>데이터 출처</dt><dd>접속 링크</dd></div></dl>
+      <p id="detail" class="note"></p><button id="reset" type="button">상자 시점 초기화</button>
+    </section>
+  </div>
+  <nav class="samples" aria-label="충격 데이터 테스트"><span>미리보기</span><a href="?hit=front&amp;time=14%3A30">앞면 충격</a><a href="?hit=left&amp;time=09%3A12">왼쪽 충격</a><a href="?hit=top&amp;time=16%3A05">윗면 충격</a><a href="?">기록 없음</a></nav>
+  <noscript>3D 상자와 충격 기록을 보려면 자바스크립트를 활성화해 주세요.</noscript>
+</main>
+<script type="module">
+  // BoxGeometry material order: +X, -X, +Y, -Y, +Z, -Z.
+  // Package convention: front = +Z, right = +X, top = +Y.
+  const faces = {right:{index:0,label:'오른쪽',view:[5,2,2]},left:{index:1,label:'왼쪽',view:[-5,2,2]},top:{index:2,label:'윗면',view:[3,5,3]},bottom:{index:3,label:'아랫면',view:[3,-5,3]},front:{index:4,label:'앞면',view:[3,2,5]},back:{index:5,label:'뒷면',view:[-3,2,-5]}};
+  const params = new URLSearchParams(location.search);
+  const hit = (params.get('hit') || '').trim().toLowerCase();
+  const selected = Object.hasOwn(faces,hit) ? faces[hit] : null;
+  const rawTime = (params.get('time') || '').trim();
+  const validTime = /^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/.test(rawTime);
+  const badge = document.querySelector('#badge');
+  document.querySelector('#face').textContent = selected ? `${selected.label} (${hit})` : hit ? '지원하지 않는 면' : '기록 없음';
+  document.querySelector('#time').textContent = validTime ? rawTime : rawTime ? '시간 형식 오류' : '미기록';
+  document.querySelector('#result-title').textContent = selected ? '충격이 감지되었습니다.' : hit ? '기록을 확인해 주세요.' : '전달된 충격 기록이 없습니다.';
+  badge.textContent = selected ? '● 충격 감지' : hit ? '● 데이터 확인 필요' : '○ 기록 없음';
+  badge.classList.toggle('alert',Boolean(selected));badge.classList.toggle('unknown',Boolean(hit && !selected));
+  document.querySelector('#detail').textContent = selected ? '빨간색 면은 링크에 기록된 충격 방향입니다. 실제 파손 여부를 뜻하지는 않습니다.' : hit ? 'hit에는 front, back, left, right, top, bottom을 사용할 수 있습니다.' : '아래 미리보기 링크에서 충격 기록을 시험해 보세요. 기록이 없다는 표시만으로 배송 안전을 판단할 수는 없습니다.';
+  const host = document.querySelector('#scene');
+  host.setAttribute('aria-label',selected ? `${selected.label}이 빨간색으로 표시된 3D 택배 상자` : '충격 표시가 없는 3D 택배 상자');
+  let renderer;
+  try {
+    const THREE = await import('three');
+    const {OrbitControls} = await import('three/addons/controls/OrbitControls.js');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38,1,0.1,100);
+    renderer = new THREE.WebGLRenderer({antialias:true,alpha:true});
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1,2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    host.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera,renderer.domElement);
+    controls.enablePan=false;controls.minDistance=4;controls.maxDistance=11;
+    // Allow viewing the underside, too. Render only on interaction to save battery.
+    controls.maxPolarAngle=Math.PI;
+    scene.add(new THREE.HemisphereLight(0xffffff,0x79856c,2.3));
+    const light=new THREE.DirectionalLight(0xffffff,3);light.position.set(3,6,5);scene.add(light);
+    function texture(label,alert){
+      const canvas=document.createElement('canvas');canvas.width=512;canvas.height=384;
+      const ctx=canvas.getContext('2d');
+      ctx.fillStyle=alert?'#d94a40':'#bf955d';ctx.fillRect(0,0,512,384);
+      ctx.strokeStyle=alert?'#bd3c34':'#b48a54';ctx.lineWidth=1;
+      for(let y=0;y<384;y+=6){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(512,y);ctx.stroke();}
+      ctx.fillStyle=alert?'#e9786c':'#d4b481';ctx.fillRect(220,0,72,384);
+      ctx.fillStyle=alert?'#fff0e9':'#3e392b';ctx.font='bold 30px sans-serif';ctx.fillText(label.toUpperCase(),28,56);
+      ctx.font='18px sans-serif';ctx.fillText(alert?'!  IMPACT DETECTED':'PARCEL / HANDLE WITH CARE',28,338);
+      const map=new THREE.CanvasTexture(canvas);map.colorSpace=THREE.SRGBColorSpace;return map;
+    }
+    const ordered=['right','left','top','bottom','front','back'];
+    const materials=ordered.map(name=>new THREE.MeshStandardMaterial({map:texture(name,name===hit),roughness:0.95}));
+    const geometry=new THREE.BoxGeometry(2.7,2.05,2.25);
+    const box=new THREE.Mesh(geometry,materials);scene.add(box);
+    const edges=new THREE.LineSegments(new THREE.EdgesGeometry(geometry),new THREE.LineBasicMaterial({color:0x765e42,transparent:true,opacity:0.5}));box.add(edges);
+    const render=()=>renderer.render(scene,camera);
+    // The reference includes a whole parcel and an inset photo. Sample only
+    // the central sticker quadrilateral, correcting its photographed skew.
+    new THREE.TextureLoader().load('./box_design_no_number.png', map=>{
+      map.colorSpace=THREE.SRGBColorSpace;
+      map.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+      const width=1.5,height=0.88,radius=0.065;
+      const shape=new THREE.Shape();
+      const left=-width/2,right=width/2,bottom=-height/2,top=height/2;
+      shape.moveTo(left+radius,bottom);shape.lineTo(right-radius,bottom);
+      shape.quadraticCurveTo(right,bottom,right,bottom+radius);
+      shape.lineTo(right,top-radius);shape.quadraticCurveTo(right,top,right-radius,top);
+      shape.lineTo(left+radius,top);shape.quadraticCurveTo(left,top,left,top-radius);
+      shape.lineTo(left,bottom+radius);shape.quadraticCurveTo(left,bottom,left+radius,bottom);
+      const stickerGeometry=new THREE.ShapeGeometry(shape,12);
+      const positions=stickerGeometry.attributes.position;
+      const uv=stickerGeometry.attributes.uv;
+      // Pixel corners in the original 1536 × 1024 reference image.
+      const tl=[355,310],tr=[882,360],bl=[355,600],br=[882,661];
+      for(let i=0;i<positions.count;i++){
+        const x=(positions.getX(i)-left)/width;
+        const y=(top-positions.getY(i))/height;
+        const px=(1-y)*((1-x)*tl[0]+x*tr[0])+y*((1-x)*bl[0]+x*br[0]);
+        const py=(1-y)*((1-x)*tl[1]+x*tr[1])+y*((1-x)*bl[1]+x*br[1]);
+        uv.setXY(i,px/map.image.width,1-py/map.image.height);
+      }
+      uv.needsUpdate=true;
+      const sticker=new THREE.Mesh(stickerGeometry,new THREE.MeshBasicMaterial({map,toneMapped:false}));
+      // Front is +Z. Offset slightly to prevent z-fighting with the carton.
+      sticker.position.set(0,0,2.25/2+0.006);
+      box.add(sticker);
+      host.setAttribute('aria-label',`${host.getAttribute('aria-label')}, 앞면 중앙에 스마트 스티커 부착`);
+      render();
+    },undefined,error=>{
+      document.querySelector('#asset-status').textContent='스티커 이미지를 불러오지 못했습니다. 페이지를 새로고침해 주세요.';
+      console.error('Sticker texture failed:',error);
+    });
+    function reset(){camera.position.set(...(selected?.view || [3,2,5]));controls.target.set(0,0,0);controls.update();render();}
+    function resize(){const w=host.clientWidth,h=host.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);render();}
+    controls.addEventListener('change',render);
+    new ResizeObserver(resize).observe(host);
+    document.querySelector('#reset').addEventListener('click',reset);
+    renderer.domElement.addEventListener('webglcontextlost',event=>{event.preventDefault();document.querySelector('#loading').textContent='3D 연결이 중단되었습니다. 페이지를 새로고침해 주세요.';});
+    reset();resize();document.querySelector('#loading').textContent='';
+  } catch(error) {
+    document.querySelector('#loading').textContent='3D를 불러오지 못했습니다. 인터넷 연결과 WebGL 지원을 확인한 뒤 새로고침해 주세요. 충격 기록은 오른쪽 또는 아래에서 확인할 수 있습니다.';
+    document.querySelector('#reset').disabled=true;
+    console.error('3D viewer failed:',error);
+  }
+</script>
+</body>
+</html>
